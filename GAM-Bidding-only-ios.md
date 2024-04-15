@@ -1,21 +1,34 @@
-# iOS GAM Bidding-Only Integration iOS
+# iOS GAM PUC-Rendered Integration
 
-## What this How-To-Guide covers
+## Overview
 
-This page explains how to integrate the Prebid SDK into your app with the GMA SDK. In this integration scenario:
+This how-to guide covers the original approach for integrating the Prebid SDK into your app with the GMA SDK. It utilizes:
 
 - **Prebid SDK** and the **Prebid server** handle the bidding and auction process.
-- **GAM** and the **GMA SDK** manage the ad inventory, select the winning ad to display based on various factors, render the ad content in the app.  
+- **GAM** and the **GMA SDK** manage the ad inventory and select the winning ad to display.
+- [**Prebid Universal Creative**](/overview/prebid-universal-creative.html) renders display ads.
+- **GMA SDK** renders video ad content.
+
+### Alternative approaches
+
+Another way to integrate GAM into your app is with the [GAM SDK-Rendered integation](TBD). 
+
+Tradeoffs:
+
+- This [Prebid Universal Creative](/overview/prebid-universal-creative.html) (PUC) approach gives programmers direct access to the bid responses, so as a developer, there is greater control over how Prebid bids are handled. 
+- However, this approach does not support rendering MRAID 3.0 creatives or SKAdNetwork. If you need those features, you'll want to use the [GAM SDK-Rendered integation](TBD) method.
+- The rendering latency of the [GAM SDK-Rendered integation](TBD) approach for display ads may be somewhat better because it does not need to hit the Prebid Cache to retrieve creatives.
 
 ## Prerequisites
 
-The GAM Bidding Only Integration recipe assumes that you have the following ingredients:
+The GAM PUC-Rendered Integration approach assumes that you have the following ingredients:
 
 - **Google Ad Manager Account** - Your GAM account allows you to manage and serve ads within your mobile app. Within this account you'll need to configure your ad inventory and create orders for serving ads within your app. This involves defining ad units (spaces within your app where ads will be displayed) and setting up orders and line items to deliver ads to those units. See [Prebid's AdOps Guide](/adops/before-you-start.html) for more information.
 - **Google Mobile Ads (GMA) SDK** - This refers to the software development kit provided by your ad server (in this case, Google Ad Manager). You need to ensure that you have the latest version of the Ad Server SDK supported by Prebid SDK. This SDK integration is necessary to communicate with the ad server and display ads in your app.
 - **Prebid SDK** - You will need the latest version of the Prebid Mobile SDK for either [Android](/prebid/prebid-mobile-android) or [iOS](/prebid/prebid-mobile-ios). This page will help you integrate the Prebid SDK into your app.
-- **Prebid Server** - You will need a server running the [Prebid Server software](/prebid-server/use-cases/pbs-sdk.html). You can set up your own Prebid Server or work with [Prebid Server managed service](https://prebid.org/managed-services/). Prebid Server will provide you with the following:
-    - Stores configuration - rather than hardcoding all the details of your current business arrangements in the app, Prebid Server stores which bidders you're currently working with, their inventory details, and other settings that can be changed without updating your app.
+- **Prebid Universal Creative** - This needs to be hosted on a CDN and loaded from the creative in GAM as detailed in the [AdOps GAM Step-by-Step reference](/adops/gam-creative-banner-sbs.html).
+- **Prebid Server** - You will need a server running [Prebid Server](/prebid-server/use-cases/pbs-sdk.html). You can set up your own Prebid Server or work with a [Prebid Server managed service](https://prebid.org/managed-services/). Prebid Server provides you with the following:
+    - Configuration storage - rather than hardcoding all the details of your current business arrangements in the app, Prebid Server stores which bidders you're currently working with, their inventory details, and other settings that can be changed without updating your app.
     - Server-side auction - the server will make the connections to multiple auction bidding partners so the app doesn't have to.
     - Privacy regulation tools - the server can help your legal team meet different regulatory needs in different jurisdictions by configuring various protocols and anonyimization activities.
 
@@ -57,16 +70,6 @@ Depending on the ad type (banner, native, or video), the rendering process begin
 
 Before displaying the ad, the PUC or the video player may check the Prebid Cache Server to load the creative content associated with the winning bid has been cached. If it has, the content is fetched and rendered.
 
-## Tradeoffs and alternative approaches
-
-Another way to integrate GAM into your app is with the [GAM Auto-Rendering integation](TBD). 
-
-(TBD: I don't recall why auto-rendering exists - asking Yuriy.)
-
-The main advantage of this integration approach is that it is more flexible. As a developer, you have greater control over how you handle Prebid bids.
-
-The major drawback however is that this approach requires more lines of code compared to alternatives like the rendering approach. 
-
 ## Initialization and General Parameters
 
 Assuming your app is already built with GMA AdUnits, the technical implementation of the Prebid SDK into your app will involve 4 major steps:
@@ -76,7 +79,7 @@ Assuming your app is already built with GMA AdUnits, the technical implementatio
 3. Link Prebid AdUnit code to your GMA AdUnits - for any adunits that your business team wants to connect to the Prebid auction.
 4. Test
 
-[links to be added once pages are written]
+[TBD links to be added once pages are written]
 
 ## AdUnit-Specific instructions
 
@@ -134,11 +137,11 @@ func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
 }
 ```
 
-> [!NOTE]
->  in case you use a single-size banner (as opposed to multi-size), i.e. 300x250 - you don’t need to make a call to the `AdViewUtils.findPrebidCreativeSize` routine - because you already know the size of the creative, however you still need to make a call to `bannerView.resize` because the creative in GAM has the 1x1 size by default and without this call it will be rendered, but as a pixel. 
+{: .alert.alert-info :}
+in case you use a single-size banner (as opposed to multi-size), i.e. 300x250 - you don’t need to make a call to the `AdViewUtils.findPrebidCreativeSize` routine - because you already know the size of the creative, however you still need to make a call to `bannerView.resize` because the creative in GAM has the 1x1 size by default and without this call it will be rendered, but as a pixel. 
 
-> [!NOTE]
-> Make sure you process all possible cases in the  `AdViewUtils.findPrebidCreativeSize` callbacks (both success and failure).  Sometimes you might not get the size of the creative (or a failure callback) - it simply means that this is not a Prebid creative.  It means that you still need to render the creative, but you most likely don’t need to resize it.
+{: .alert.alert-info :}
+Make sure you process all possible cases in the  `AdViewUtils.findPrebidCreativeSize` callbacks (both success and failure).  Sometimes you might not get the size of the creative (or a failure callback) - it simply means that this is not a Prebid creative.  It means that you still need to render the creative, but you most likely don’t need to resize it.
 
 #### Step 1: Create a `BannerAdUnit`
 
@@ -637,7 +640,7 @@ Different display mechanisms are used for these formats:
 - **banner** is rendered by the GMA SDK
 - **native** is rendered in the publisher’s custom view
 
-From the high level perspective the integration consist of three steps:
+From the high level perspective the integration consists of three steps:
 
 1. [Configure the Native Bid Request](TBD) 
 2. [Configure and perform the ad request](TBD)
