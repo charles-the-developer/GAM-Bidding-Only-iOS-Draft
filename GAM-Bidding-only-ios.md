@@ -185,7 +185,7 @@ Once an app receives a signal that an ad is loaded, you should use the method `A
 
 ### Format: Video Banner (aka Outstream Video)
 
-This section describes integration of a video creative that serves into a display AdUnit. This differs from a video ad that will display inside a dedicated video player, also called [Instream Video](link TBD).
+This section describes integration of a video creative that serves into a display AdUnit. This differs from a video ad that will display inside a dedicated video player, also called [Instream Video](link TBD). Note that this scenario supports only 'in-feed' and 'in-article' outstream creatives. Please see the [multiformat html+video](TBD) section for 'in-banner' outstream.
 
 To integrate video banner ads into the app you need to use the `VideoAdUnit` class. It is dedicated to configure and make bid requests to Prebid Server and provide targeting keywords of the winning bid to the GMA SDK.
 
