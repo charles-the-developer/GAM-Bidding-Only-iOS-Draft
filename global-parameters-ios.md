@@ -1,191 +1,198 @@
 # Global Parameters iOS
 
+This page documents various global parameters you can set on the Prebid SDK. It describes the properties and methods of the Prebid SDK that allow you to supply important parameters to the header bidding auction.
 
-This page documents various global parameters you can set on the Prebid SDK. It describes the various properties and methods of the Prebid SDK, First-Party Data used for Targeting Ads, and consent options under various privacy regulations and User Identity API.  
-
-
-## Prebid SDK Properties and Methods
+## Prebid Global Properties and Methods
 
 The `Prebid` class is a singleton that enables you to apply global settings.
 
+### Global Properties
 
-### Properties
+(TBD - where are these set? Need an example. I reformatted this as a table.)
 
-`prebidServerAccountId`: [String] containing the Prebid Server account ID.
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| prebidServerAccountId | either | string | Your Prebid Server team will tell you whether this is required or not and if so, the value. | "abc123" |
+| prebidServerHost | required | string | This is a URL or system-defined Prebid Server host. It's where the Prebid SDK will send the auction information. Your Prebid Server team will tell you which value to use. The system-defined values are: (TBD) | "https://prebidserver.example.com/openrtb2/auction" |
+| shareGeoLocation | optional | boolean | If this flag is true AND the app collects the user’s geographical location data, Prebid Mobile will send the user’s geographical location data (TBD - lat/long?) to the Prebid Server. The default setting is false. | `true` |
+| logLevel | optional | TBD | This property controls the level of logging output to the console. The value can be (TBD). | TBD |
+| timeoutMillis | optional | integer | (SDK v1.2+) The Prebid SDK timeout. When this number of milliseconds passes, the Prebid SDK returns control to the ad server SDK to fetch an ad without Prebid bids. | 1000 |
+| creativeFactoryTimeout | optional | integer | Controls how long a banner creative has to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
+| creativeFactoryTimeoutPreRenderContent | optional | integer | Controls how much time video and interstitial creatives have to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
+| storedAuctionResponse | optional | string | For testing and debugging. Get this value from your Prebid Server team. It signals Prebid Server to respond with a static response from the Prebid Server Database. Get this value from your Prebid Server team. See [more information on stored auction responses](/prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#stored-responses). | "abc123-sar-test-320x50" |
+| pbsDebug | optional | boolean | Adds the debug flag (`test`:1) on the outbound http call to the Prebid Server. The `test` flag signals to the Prebid Server to emit the full resolved request and the full Bid Request and Bid Response to and from each bidder. | true |
 
-`prebidServerHost`: [String] This property is crucial as it contains the configuration for your Prebid Server host, with which the Prebid SDK will communicate. Depending on your specific needs, you can choose from the system-defined Prebid Server hosts or define your own custom Prebid Server host.
+### Global Methods
 
-`shareGeoLocation`: [Optiona]l [Bool]; if this flag is True AND the app collects the user’s geographical location data, Prebid Mobile will send the user’s geographical location data to the Prebid Server. Suppose this flag is false OR the app does not collect the user’s geographical location data. In that case, Prebid Mobile will not populate any user's geographical location information in the call to Prebid Server. The default setting is false.
+#### addStoredBidResponse()
 
-`logLevel`: This property controls the level of logging output to the console.
+Stored Bid Responses are for testing and debugging similar to Stored Auction Responses (see the Global Properties above). They signal Prebid Server to respond with a static pre-defined response, except Stored Bid Responses actually exercise the bidder adapter. For more information on how stored bid responses work, refer to the [Prebid Server endpoint doc](/prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#stored-responses). Your Prebid Server team will help you determine how best to setup test and debug.
 
-`timeoutMillis`: [Int]
+Signature:
 
-The Prebid timeout (available in SDK v1.2+), when set, returns control to the ad server SDK to fetch an ad once the specified timeout has elapsed. Because the Prebid SDK gets bids from the Prebid Server in one payload, setting the Prebid timeout too low can reduce demand, resulting in a potential negative revenue impact.
-
-`creativeFactoryTimeout`: [int] This parameter controls how long a banner creative has to load before it is considered a failure.
-
-`creativeFactoryTimeoutPreRenderContent`: This parameter controls how much time video and interstitial creatives have to load before it is considered a failure.
-
-`storedAuctionResponse`: Set as type string, stored auction responses signal Prebid Server to respond with a static response matching the storedAuctionResponse found in the Prebid Server Database, useful for debugging and integration testing. No bid requests will be sent to bidders when a matching storedAuctionResponse is found. For more information on how stored auction responses work, refer to the [written description on github issue 133.](https://github.com/prebid/prebid-mobile-android/issues/133)
-
-`pbsDebug:` adds the debug flag (“test”:1) on the outbound http call to the Prebid Server. The test:1 flag signals to the Prebid Server to emit the full resolved request (resolving any Stored Request IDs) and the full Bid Request and Bid Response to and from each bidder.
-
-
-### Methods
-
-
-#### Stored Responses
-
-`addStoredBidResponse`: This method takes two parameters
-
-
-
-* `bidder`: Bidder name as defined by Prebid Server bid adapter of type string.
-* `responseId`: Configuration ID used in the Prebid Server Database to store static bid responses.
-
-Stored Bid Responses are similar to Stored Auction Responses in that they signal to Prebid Server to respond with a static pre-defined response, except Stored Bid Responses is done at the bidder level, with bid requests sent out for any bidders not specified in the bidder parameter. For more information on how stored auction responses work, refer to [github issue 133](https://github.com/prebid/prebid-mobile-android/issues/133).
-
-
-```
+```swift
 func addStoredBidResponse(bidder: String, responseId: String)
 ```
 
+Parameters:
 
-`clearStoredBidResponses`: This method clears any stored bid responses. It doesn’t take any parameters.
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| bidder | required | string | Bidder name as defined by Prebid Server | "bidderA" |
+| responseId | required | string | ID used in the Prebid Server Database. Get this value from your Prebid Server team. | "abc123-sbr-test-300x250" |
 
-Custom Headers
+#### clearStoredBidResponses()
 
-`addCustomHeader`: This method enables you to customize the HTTP call to the prebid server. It takes two parameters
+This method clears any stored bid responses. It doesn’t take any parameters.
 
+Signature:
 
+```swift
+func clearStoredBidResponses()
+```
 
-* `name`: a name for the custom header
-* `value`: a value for the custom header
+Parameters: none.
 
-`clearCustomHeaders`: Allows you to clear any custom headers you have previously set.
+#### addCustomHeader()
 
+This method enables you to customize the HTTP call to Prebid Server.
 
-### SDK Properties and Methods Example usage
+Signature:
 
+```swift
+func addCustomHeader(name: String, value: String)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| name | required | string | Name of the custom header | "X-mycustomheader" |
+| value | required | string | Value for the custom header | "customvalue" |
+
+#### clearCustomHeaders()
+
+Allows you to clear any custom headers you have previously set.
+
+Signature:
+
+```swift
+func clearCustomHeaders()
+```
+
+Parameters: none
 
 ## Consent Management
 
-_This section describes how publishers can provide info on user consent to the SDK and how SDK behaves under different kinds of restrictions._
+This section describes how app developers can provide info on user consent to the Prebid SDK and how SDK behaves under different kinds of restrictions.
 
+### iOS App Tracking Transparency
 
-### App Tracking Transparency
-
-You should follow Apple's Guidelines on implementing [App Tracking Transparency](https://developer.apple.com/documentation/apptrackingtransparency). The Prebid SDK automatically sends ATT signals, so no prebid-specific work is required.
-
+You should follow Apple's Guidelines on implementing [App Tracking Transparency](https://developer.apple.com/documentation/apptrackingtransparency). The Prebid SDK automatically sends ATT signals, so no Prebid-specific work is required.
 
 ### GDPR
 
-There are two ways to provide information on user consent to the Prebid SDK according to The Transparency & Consent Framework (TCF)
+There are two ways to provide information on user consent to the Prebid SDK according to the [IAB's Transparency & Consent Framework (TCF)](https://iabeurope.eu/understanding-the-upcoming-transparency-consent-framework-v2-2/)
 
+- Explicitly via Prebid SDK API: publishers can provide TCF data via Prebid SDK’s Targeting API
+- Implicitly set through the CMP: Prebid SDK reads the TCF data stored in the `UserDefaults`. This is the preferred approach.
 
-
-* Explicitly via SDK API: publishers can provide TCF data via SDK’s Targeting API
-* Implicitly set through the CMP: SDK reads the TCF data stored in the `UserDefaults`
-
-**Important**: The SDK explicitly prioritizes the values set through the API over those stored by the CMP and treats the latter as a fallback.  If the publisher provides TCF data both ways, the values set through the API will be sent to the PBS, and values stored by the CMP will be ignored. 
-
+**Important**: The Prebid SDK explicitly prioritizes the values set through the API over those stored by the CMP.  If the publisher provides TCF data both ways, the values set through the API will be sent to the PBS, and values stored by the CMP will be ignored. 
 
 #### Setting GDPR Values with the API
 
-SDK provides three properties to set the TCF values explicitly, though this method is not preferred. Ideally, the Consent Management Platform will set these values – see the next section.
+Prebid SDK provides three properties to set TCF consent values explicitly, though this method is not preferred. Ideally, the Consent Management Platform will set these values – see the next section.
 
 If you need to set the values directly, here's how to indicate that the user is subject to GDPR:
 
 Swift: 
 
-
-```
+```swift
 Targeting.shared.subjectToGDPR = false
 ```
-
 
 To provide the consent string:
 
 Swift:
 
-
-```
+```swift
 Targeting.shared.gdprConsentString = "BOMyQRvOMyQRvABABBAAABAAAAAAEA"
 ```
-
 
 To set the purpose consent: 
 
 Swift:
 
-
-```
+```swift
 Targeting.shared.purposeConsents = "100000000000000000000000"
 ```
 
-
-
 #### Getting Consent Values from the CMP
 
-SDK reads the values for the following keys from the `UserDefaults` object 
+Prebid SDK reads the values for the following keys from the `UserDefaults` (iOS) or `SharedPreferences` (Android) object:
 
-
-
-* **IABTCF_gdprApplies** - indicates whether the user is subject to GDPR
-* **IABTCF_TCString** - full encoded TC string
-* **IABTCF_PurposeConsents** - indicates the consent status for the purpose. 
+- **IABTCF_gdprApplies** - indicates whether the user is subject to GDPR
+- **IABTCF_TCString** - full encoded TC string
+- **IABTCF_PurposeConsents** - indicates the consent status for the purpose. 
 
 For more detailed information, read the [In-App Details section](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#in-app-details) of the TCF.
 
-Here is an example of a `UserDefaults` file with TCF signals: 
-
 **Note**: Publishers shouldn’t explicitly assign values for these keys (unless they have a custom-developed CMP).  It is a privilege of the Consent Management Provider (CMP) SDKs. If the publisher wants to provide this data to the Prebid SDK, they should use the explicit APIs described above.
 
-Here are several essential implementation details on how SDK processes CMP values:
+Here's how Prebid SDK processes CMP values:
 
+- It reads CMP values during the initialization and on each bid request, so the latest value is always used.
+- It doesn’t verify or validate CMP values in any way
 
+### CCPA / USP
 
-* Prebid SDK reads CMP values from the `UserDefaults `during the initialization 
-* Prebid SDK doesn’t verify or validate CMP values in any way
-* Prebid SDK reads CMP values for each bid request, so the latest value is always used.
+The California Consumer Protection Act drove the IAB to implement the "US Privacy" protocol.
 
+Prebid SDK reads and sends USP/CCPA signals according to the [US Privacy User Signal Mechanism](https://github.com/InteractiveAdvertisingBureau/USPrivacy/blob/master/CCPA/USP%20API.md) and [OpenRTB extension](https://github.com/InteractiveAdvertisingBureau/USPrivacy/blob/7f4f1b2931cca03bd4d91373bbf440071823f257/CCPA/OpenRTB%20Extension%20for%20USPrivacy.md). 
 
-### CCPA
-
-Prebid SDK reads and sends CCPA signals according to the [US Privacy User Signal Mechanism](https://github.com/InteractiveAdvertisingBureau/USPrivacy/blob/master/CCPA/USP%20API.md) and [OpenRTB extension](https://github.com/InteractiveAdvertisingBureau/USPrivacy/blob/7f4f1b2931cca03bd4d91373bbf440071823f257/CCPA/OpenRTB%20Extension%20for%20USPrivacy.md). 
-
-SDK reads the value for the `IABUSPrivacy_String` key from the `UserDefaults` and sends it in the `regs.ext.us_privacy` object of the OpenRTB request.
-
+Prebid SDK reads the value for the `IABUSPrivacy_String` key from the `UserDefaults` (iOS) or `SharedPreferences` (Android) and sends it in the `regs.ext.us_privacy` object of the OpenRTB request.
 
 ### COPPA
 
-Prebid SDK follows the OpenRTB 2.6 spec and provides an API to indicate whether the current user falls under COPPA regulation. Publishers can set the respective flag using the targeting API: 
+The Children's Online Privacy Protection Act of the United States is a way for content producers to declare their content is aimed at children, which invokes additional privacy protections.
+
+Prebid SDK follows the OpenRTB 2.6 spec and provides an API to indicate whether the current content falls under COPPA regulation. Publishers can set the respective flag using the targeting API: 
 
 Swift:
 
-
-```
+```swift
 Targeting.shared.subjectToCOPPA = true
 ```
 
+Prebid SDK passes this flag in the `regs.coppa` object of the bid requests.
 
-SDK passes this flag in the `regs.coppa` object of the bid requests. 
+If you're app developer setting this COPPA flag, we recommend you also:
 
-SDK relies on the section “**7.5 COPPA Regulation Flag**” of the OpenRTB spec and does not refrain from reading user and device data since suppressing these fields should be an exchange obligation. 
-
+- set the `shareGeoLocation` property to false
+- avoid passing any sensitive first party data
 
 ### GPP
 
-Note: GPP is supported starting from version Prebid SDK 2.0.6.
+A Consent Management Platform (CMP) utilizing [IAB's Global Privacy Protocol](https://iabtechlab.com/gpp/) is a comprehensive way for apps to manage user consent across multiple regulatory environments.
 
-Prebid SDK reads and sends GPP signals according to the [CMP API Specification](https://github.com/InteractiveAdvertisingBureau/Global-Privacy-Platform/blob/main/Core/CMP%20API%20Specification.md) and OpenRTB 2.6 spec (so far [GPP in proposal](https://github.com/prebid/prebid-server/issues/2442)). 
+Since version 2.0.6, Prebid SDK reads and sends GPP signals:
 
-SDK reads the value for the `IABGPP_HDR_GppString` key in the `UserDefaults` and sends it in the `regs.gpp` object of the OpenRTB request.
+- The GPP string is read from IABGPP_HDR_GppString in `UserDefaults` (iOS) or `SharedPreferences` (Android). It is sent to Prebid Server on `regs.gpp`.
+- The GPP Section ID is likewise read from IABGPP_GppSID. It is sent to Prebid Server on `regs.gpp_sid`.
 
-## First Party User Data
+## First Party Data
 
-Prebid provides following functions to manage First Party User Data:
+First Party Data (FPD) is information about the app or user known by the developer that may be of interest to advertisers. 
+
+- User FPD includes details about a specific user like "frequent user" or "job title". This data if often subject to regulatory control, so needs to be specified as user-specific data. Note that some attributes like health status are limited in some regions. App developers are strongly advised to speak with their legal counsel before passing User FPD.
+- Inventory FPD includes details about the particular part of the app where the ad will displayed like "sports/basketball" or "editor 5-star rating".
+
+### User FPD
+
+Prebid SDK provides following functions to manage First Party User Data:
 
 ```swift
 func addUserData(key: String, value: String)
@@ -203,7 +210,7 @@ Example:
 Targeting.shared.addUserData(key: "globalUserDataKey1", value: "globalUserDataValue1")
 ```
 
-### First Party Inventory (Context) Data
+### Inventory FPD
 
 Prebid provides following functions to manage First Party Inventory Data:
 
@@ -223,9 +230,9 @@ Example:
 Targeting.shared.addContextData(key: "globalContextDataKey1", value: "globalContextDataValue1")
 ```
 
-### Access Control
+### Controlling Bidder Access to FPD
 
-The First Party Data Access Control List provides a methods to restrict access to first party data to a supplied list of bidders.
+Prebid Server will let you control which bidders are allowed access to First Party Data. Prebid SDK collects this an Access Control List with the following methods:
 
 ```swift
 func addBidderToAccessControlList(_ bidderName: String)
@@ -241,24 +248,24 @@ Example:
 Targeting.shared.addBidderToAccessControlList(Prebid.bidderNameRubiconProject)
 ```
 
-## User Identity API
+## User Identity
 
-Prebid SDK supports two interfaces to pass / maintain User IDs and ID vendor details:
+Mobile apps traditionally rely on IDFA-type device IDs for advertising, but there are other User ID systems available to app developers and more will be made available in the future. Prebid SDK supports two ways to maintain User ID details:
 
-* Real-time in Prebid SDK's API field externalUserIdArray
-* Store User Id(s) in local storage
+- A global property - in this approach, the app developer sets the IDs while initializing the Prebid SDK. This data persists only for the user session.
+- Local storage - the developer can choose to store the IDs persistently in local storage and Prebid SDK will utilize them on each bid request.
 
-Any identity vendor's details in local storage will be sent over to Prebid Server as is, unadulterated. If data is sent in the API and entered into local storage, the API detail will prevail.
+Any identity vendor's details in local storage will be sent to Prebid Server unadulterated. If user IDs are set both in the property and entered into local storage, the property data will prevail.
 
-### Prebid SDK API Access
+### Storing IDs in a Property
 
-Prebid SDK supports passing an array of UserID(s) at auction time in the field externalUserIdArray, which is globally scoped. Setting the externalUserIdArray object once per user session is sufficient, as these values would be used in all consecutive ad auctions in the same session.
+Prebid SDK supports passing an array of UserID(s) at auction time in the Prebid global field `externalUserIdArray`. Setting the `externalUserIdArray` object once per user session is sufficient unless one of the values changes.
 
 ```swift
 public var externalUserIdArray = [ExternalUserId]()
 ```
 
-**Exmaples**
+**Examples**
 
 ```swift
 // User Id from External Third Party Sources
@@ -268,16 +275,16 @@ externalUserIdArray.append(ExternalUserId(source: "adserver.org", identifier: "1
 externalUserIdArray.append(ExternalUserId(source: "netid.de", identifier: "999888777")) 
 externalUserIdArray.append(ExternalUserId(source: "criteo.com", identifier: "_fl7bV96WjZsbiUyQnJlQ3g4ckh5a1N")) 
 externalUserIdArray.append(ExternalUserId(source: "liveramp.com", identifier: "AjfowMv4ZHZQJFM8TpiUnYEyA81Vdgg"))
-externalUserIdArray.append(ExternalUserId(source: "sharedid.org", identifier: "111111111111", atype: 1, ext: ["third" : "01ERJWE5FS4RAZKG6SKQ3ZYSKV"]))
+externalUserIdArray.append(ExternalUserId(source: "sharedid.org", identifier: "111111111111", atype: 1))
 
 Prebid.shared.externalUserIdArray = externalUserIdArray
 ```
 
-### Local Storage
+### Storing IDs in Local Storage
 
-Prebid SDK provides a local storage interface to set, retrieve, or update an array of user IDs with associated identity vendor details. Prebid SDK will retrieve and pass User IDs and ID vendor details to PBS if values are present in local storage. The main difference between the Prebid API interface and the local storage interface is data storage persistence. Local Storage data will persist across user sessions, whereas the Prebid API interface (externalUserIdArray) persists only for the user session. If a vendor's details are passed into local storage and the Prebid API simultaneously, the Prebid  API data (externalUserIdArray) will prevail.
+Prebid SDK provides a local storage interface to set, retrieve, or update an array of user IDs with associated identity vendor details. It will then retrieve and pass these User IDs to Prebid Server on each auction, even on the next user session.
 
-Prebid SDK Provides five functions to handle User ID details:
+Prebid SDK Provides several functions to handle User ID details within the local storage:
 
 ```swift
 public func storeExternalUserId(_ externalUserId: ExternalUserId)
@@ -295,7 +302,7 @@ public func removeStoredExternalUserIds()
 
 ```swift
 //Set External User ID
-Targeting.shared.storeExternalUserId(ExternalUserId(source: "sharedid.org", identifier: "111111111111", atype: 1, ext: ["third" : "01ERJWE5FS4RAZKG6SKQ3ZYSKV"]))
+Targeting.shared.storeExternalUserId(ExternalUserId(source: "sharedid.org", identifier: "111111111111", atype: 1))
 
 //Get External User ID
 let externalUserIdSharedId = Targeting.shared.fetchStoredExternalUserId("sharedid.org")
