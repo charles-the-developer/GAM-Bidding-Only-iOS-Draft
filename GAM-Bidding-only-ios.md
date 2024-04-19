@@ -1,4 +1,4 @@
-# iOS GAM PUC-Rendered Integration
+# GAM PUC-Rendered Integration
 
 ## Overview
 
@@ -363,7 +363,7 @@ To integrate an interstitial banner ad into the app you use the Prebid SDK `Inte
 ```swift
    func createAd() {
         // 1. Create an InterstitialAdUnit
-        adUnit = InterstitialAdUnit(configId: CONFIG_ID)
+        adUnit = InterstitialAdUnit(configId: CONFIG_ID, minWidthPerc: 60, minHeightPerc: 60)
         
         // 2. Make a bid request to Prebid Server
         let gamRequest = GAMRequest()
@@ -377,7 +377,7 @@ To integrate an interstitial banner ad into the app you use the Prebid SDK `Inte
                 if let error = error {
                     DemoLogger.shared.error("Failed to load interstitial ad with error: \(error.localizedDescription)")
                 } else if let ad = ad {
-                    // 4. Render the interstitial ad
+                    // 4. Immediately render the interstitial ad
                     ad.fullScreenContentDelegate = self
                     ad.present(fromRootViewController: self)
                 }
@@ -409,7 +409,7 @@ After receiving a bid it's time to load the ad from GAM. If the `GAMRequest` con
 
 #### Step 4: Render the interstitial ad
 
-Follow the [GMA SDK guide](https://developers.google.com/ad-manager/mobile-ads-sdk/ios/interstitial#display_the_ad) to display the interstitial ad. Note that you'll need to decide whether it's going to be rendered immediately after receiving it or rendered later in the flow of an app.
+Follow the [GMA SDK guide](https://developers.google.com/ad-manager/mobile-ads-sdk/ios/interstitial#display_the_ad) to display the interstitial ad. Note that you'll need to decide whether it's going to be rendered immediately after receiving it or rendered later in the flow of an app. Note that the example above implements an immediate render approach.
 
 ### Format: Video Interstitial
 
@@ -440,7 +440,7 @@ To integrate Video Interstitial ads into the app you should use the Prebid SDK `
                 if let error = error {
                     DemoLogger.shared.error("Failed to load interstitial ad with error: \(error.localizedDescription)")
                 } else if let ad = ad {
-                    // 5. Present the interstitial ad
+                    // 5. Immediately render the interstitial ad
                     ad.present(fromRootViewController: self)
                     ad.fullScreenContentDelegate = self
                 }
@@ -471,7 +471,7 @@ After receiving a bid it's time to load the ad from GAM. If the `GAMRequest` con
 
 #### Step 5: Render the interstitial ad
 
-Follow the [GMA SDK guide](https://developers.google.com/ad-manager/mobile-ads-sdk/ios/interstitial#display_the_ad) to display the interstitial ad. Note that you'll need to decide whether it's going to be rendered immediately after receiving it or rendered later in the flow of an app.
+Follow the [GMA SDK guide](https://developers.google.com/ad-manager/mobile-ads-sdk/ios/interstitial#display_the_ad) to display the interstitial ad. Note that you'll need to decide whether it's going to be rendered immediately after receiving it or rendered later in the flow of an app. Note that the example above implements an immediate render approach.
 
 ### Format: Rewarded Video Ad
 
@@ -533,7 +533,7 @@ When Prebid Server responds, Prebid SDK will set the targeting keywords of the w
 
 After receiving a bid it's time to load the ad from GAM. If the `GAMRequest` contains targeting keywords, the respective Prebid line item may be returned from GAM, and GMA SDK will render its creative. 
 
-#### Step 5: Present the Rewarded Ad
+#### Step 5: Display the Rewarded Ad
 
 Follow the [GMA SDK guide](https://developers.google.com/ad-manager/mobile-ads-sdk/ios/rewarded#show_the_ad) to display the rewarded ad.
 
@@ -674,13 +674,13 @@ Different display mechanisms are used for these formats:
 
 From the high level perspective the integration consists of three steps:
 
-1. [Configure the Native Bid Request](TBD) 
-2. [Configure and perform the ad request](TBD)
+1. [Define the Native Ad Configuration](TBD) 
+2. [Configure and perform the multiformat request](TBD)
 3. [Manage the Ad Response](TBD)
 
 The following sections describe these steps in details. 
 
-#### Configure the Native Bid Request
+#### Define the Native Ad Configuration
 
 According to the [OpenRTB protocol](https://iabtechlab.com/wp-content/uploads/2022/04/OpenRTB-2-6_FINAL.pdf) the native object in the Bid Request should contain request payload complying with the [Native Ad Specification v1.2](https://www.iab.com/wp-content/uploads/2018/03/OpenRTB-Native-Ads-Specification-Final-1.2.pdf). For this purpose, publishers should provide the set of native assets that confirms the ad’s layout in the app. 
 
@@ -700,18 +700,14 @@ private var nativeRequestAssets: [NativeAsset] {
         
     return [title, body, image, sponsored]
 }
-```
-#### Prepare the event trackers (Optional)
 
-Both the [Native Ad v1.2 Specification](https://www.iab.com/wp-content/uploads/2018/03/OpenRTB-Native-Ads-Specification-Final-1.2.pdf) and Prebid SDK assume that custom event trackers are added to the native ad. 
-
-```swift
+// optional
 private var eventTrackers: [NativeEventTracker] {
         [NativeEventTracker(event: EventType.Impression, methods: [EventTracking.Image,EventTracking.js])]
 }
 ```
 
-#### Integrate the multiformat ad unit 
+#### Configure and perform the multiformat request
 
 To integrate multiformat ads into the app you should use the `PrebidAdUnit` and `PrebidRequest` classes. They'll be used to make multiformat bid requests.
 
@@ -801,3 +797,89 @@ The _fetchDemand_ method makes a bid request to the Prebid Server. The `GAMReque
 Finally it's time to request the ad from GAM. If the a Prebid line item is triggered, the GMA SDK will render the creative.
 
 See the [GMA SDK documentation](https://developers.google.com/ad-manager/mobile-ads-sdk/ios/native-banner) for more information on how to integrate multiformat ads. 
+
+#### Manage the Ad Response 
+
+The ad response from GAM can be an HTML banner or a Native creative. To render these scenarios, app developers should implement the respective routines:
+
+- Banner: GAMBannerAdLoaderDelegate to properly manage the ad view size for the Prebid ad.
+- Native: GADCustomNativeAdLoaderDelegate and NativeDelegate to extract the Prebid native ad creative from the local cache and provide the app’s code with the assets’ content to render.
+
+(TBD - we need a description of how these actually work at runtime... who calls what?)
+
+The following code snippets illustrate the approach.
+
+Implement GAMBannerAdLoaderDelegate
+
+```swift
+// TBD - what is this function?
+func validBannerSizes(for adLoader: GADAdLoader) -> [NSValue] {
+   return [NSValueFromGADAdSize(GADAdSizeFromCGSize(adSize))]
+}
+    
+func adLoader(_ adLoader: GADAdLoader, didFailToReceiveAdWithError error: Error) {
+   DemoLogger.shared.error("GAM did fail to receive ad with error: \(error)")
+}
+    
+func adLoader(_ adLoader: GADAdLoader, didReceive bannerView: GAMBannerView) {
+    self.bannerView.isHidden = false
+    self.nativeView.isHidden = true
+        
+    gamBanner?.removeFromSuperview()
+    self.gamBanner = bannerView   
+    self.bannerView.addSubview(bannerView)
+        
+    AdViewUtils.findPrebidCreativeSize(bannerView, success: { [weak self] size in
+       bannerView.resize(GADAdSizeFromCGSize(size))
+       self?.bannerView.constraints.first { $0.firstAttribute == .width }?.constant = size.width
+       self?.bannerView.constraints.first { $0.firstAttribute == .height }?.constant = size.height
+    }, failure: { _ in })
+}
+```
+
+Implement GADCustomNativeAdLoaderDelegate:
+
+```swift
+func customNativeAdFormatIDs(for adLoader: GADAdLoader) -> [String] {
+    [DM_AD_FORMAT_ID]
+}
+    
+func adLoader(_ adLoader: GADAdLoader, didReceive customNativeAd: GADCustomNativeAd) {
+     gamBanner?.removeFromSuperview()
+        
+     Utils.shared.delegate = self
+     Utils.shared.findNative(adObject: customNativeAd)
+}
+```
+
+Implement Prebid’s protocol NativeAdDelegate
+
+```swift
+func nativeAdLoaded(ad: NativeAd) {
+     nativeAd = ad
+     titleLabel.text = ad.title
+     bodyLabel.text = ad.text
+        
+     if let imageString = ad.imageUrl {
+         ImageHelper.downloadImageAsync(imageString) { result in
+             if case let .success(image) = result {
+                 DispatchQueue.main.async {
+                     self.mainImageView.image = image
+                 }
+             }
+          }
+      }
+        
+     sponsoredLabel.text = ad.sponsoredBy
+
+     nativeAd.registerView(view: view, clickableViews: [mainImageView])
+}
+
+func nativeAdNotFound() {
+    PrebidDemoLogger.shared.error("Native ad not found")
+}
+
+func nativeAdNotValid() {
+    PrebidDemoLogger.shared.error("Native ad not valid")
+}
+```
