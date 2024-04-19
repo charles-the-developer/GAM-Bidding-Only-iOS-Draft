@@ -1,4 +1,4 @@
-# GAM PUC-Rendered Integration
+# GAM Bidding-Only Integration
 
 ## Overview
 
@@ -15,13 +15,13 @@ Another way to integrate GAM into your app is with the [GAM SDK-Rendered integat
 
 Tradeoffs:
 
-- This [Prebid Universal Creative](/overview/prebid-universal-creative.html) (PUC) approach gives programmers direct access to the bid responses, so as a developer, there is greater control over how Prebid bids are handled. 
+- The 'Bidding Only' approach detailed here gives programmers direct access to the bid responses, so as a developer, there is greater control over how Prebid bids are handled. 
 - However, this approach does not support rendering MRAID 3.0 creatives or SKAdNetwork. If you need those features, you'll want to use the [GAM SDK-Rendered integation](TBD) method.
 - The rendering latency of the [GAM SDK-Rendered integation](TBD) approach for display ads may be somewhat better because it does not need to hit the Prebid Cache to retrieve creatives.
 
 ## Prerequisites
 
-The GAM PUC-Rendered Integration approach assumes that you have the following ingredients:
+The GAM Bidding-Only Integration approach assumes that you have the following ingredients:
 
 - **Google Ad Manager Account** - Your GAM account allows you to manage and serve ads within your mobile app. Within this account you'll need to configure your ad inventory and create orders for serving ads within your app. This involves defining ad units (spaces within your app where ads will be displayed) and setting up orders and line items to deliver ads to those units. See [Prebid's AdOps Guide](/adops/before-you-start.html) for more information.
 - **Google Mobile Ads (GMA) SDK** - This refers to the software development kit provided by your ad server (in this case, Google Ad Manager). You need to ensure that you have the latest version of the Ad Server SDK supported by Prebid SDK. This SDK integration is necessary to communicate with the ad server and display ads in your app.
