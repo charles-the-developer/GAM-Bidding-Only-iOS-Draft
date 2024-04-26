@@ -1,29 +1,153 @@
-# Global Parameters iOS
+# Global Parameters
 
 This page documents various global parameters you can set on the Prebid SDK. It describes the properties and methods of the Prebid SDK that allow you to supply important parameters to the header bidding auction.
 
 ## Prebid Global Properties and Methods
 
-The `Prebid` class is a singleton that enables you to apply global settings.
+The `Prebid` class is a singleton that enables you to apply global settings. It covers:
+
+- attributes that are defined during initialization (e.g. the Prebid Server connection)
+- values affecting the behavior of the Prebid SDK (e.g. timeout)
+- items influencing the OpenRTB output (e.g. shareGeoLocation)
 
 ### Global Properties
 
-(TBD - where are these set? Need an example. I reformatted this as a table.)
+(TBD - where are these set? Need an example. )
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Purpose | Description | Example |
+| --- | --- | --- | --- | --- |
+| prebidServerAccountId | either | string | init | (iOS only) Your Prebid Server team will tell you whether this is required or not and if so, the value. | "abc123" |
+| prebidServerHost | optional | enum | init | (iOS only) This can take the values "Appnexus", "Rubicon", or "Custom". If "Custom", you need to use the setCustomPrebidServerUrl() method to set a URL. This is where the Prebid SDK will send the auction information. Your Prebid Server team will tell you which value to use. The default is "Custom". | "Custom" |
+| customStatusEndpoint | optional | string | init | (iOS only) Use this URL to check the status of Prebid Server. The default status endpoint is the PBS URL appended with '/status'. | "https://prebidserver<wbr>.example<wbr>.com/custom<wbr>/status" |
+| shareGeoLocation | optional | boolean | ORTB | (iOS only) If this flag is true AND the app collects the user’s geographical location data, Prebid Mobile will send the user’s lat/long geographical location data to the Prebid Server. The default is false. | `true` |
+| locationUpdatesEnabled | optional | boolean | ORTB | If true, the SDK will periodically try to listen for location updates. Default is `false`. | `true` |
+| logLevel | optional | enum | SDK control | (iOS only) This property controls the level of logging output to the console. The value can be .error, .info, .debug, .verbose, .warn, .severe, and .info. The default is `.debug`. | `.error` |
+| debugLogFileEnabled | optional | boolean | SDK control | If set to true, the output of PrebidMobile's internal logger is written to a text file. Default is `false`. | `true` |
+| timeoutMillis | optional | integer | init | (iOS only) (SDK v1.2+) The Prebid SDK timeout. When this number of milliseconds passes, the Prebid SDK returns control to the ad server SDK to fetch an ad without Prebid bids. | 1000 |
+| creativeFactoryTimeout | optional | integer | SDK control | (iOS only) Controls how long a banner creative has to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
+| creativeFactoryTimeoutPreRenderContent | optional | integer | SDK control | (iOS only) Controls how much time video and interstitial creatives have to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
+| storedAuctionResponse | optional | string | ORTB | (iOS only) For testing and debugging. Get this value from your Prebid Server team. It signals Prebid Server to respond with a static response from the Prebid Server Database. See [more information on stored auction responses](/prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#stored-responses). | "abc123-sar-test-320x50" |
+| pbsDebug | optional | boolean | ORTB | (iOS only) Adds the debug flag (`test`:1) on the outbound http call to the Prebid Server. The `test` flag signals to the Prebid Server to emit the full resolved request and the full Bid Request and Bid Response to and from each bidder. | true |
+| shouldAssignNativeAssetID | optional | boolean | ORTB | (iOS only) Whether to automatically assign an assetID for a Native ad. Default is `false`. | true |
+| useCacheForReportingWithRenderingAPI | optional | boolean | ORTB | Indicates whether PBS should cache the bid on the server side. If the value is `true` the Prebid SDK will make the cache request to retrieve the cached asset. Default is `false`. | true |
+| useExternalClickthroughBrowser | optional | boolean | SDK control | (iOS only) Controls whether to use PrebidMobile's in-app browser or the Safari App for displaying ad clickthrough content. Default is false. | true |
+| useExternalClickthroughBrowser | optional | enum | ORTB | (iOS only) Indicates the type of browser opened upon clicking the creative in an app. This corresponds to the OpenRTB imp.clickbrowser field. Values are "embedded" and "native". Default is "native". | "native".
+| includeWinners | optional | boolean | ORTB | (iOS only) If `true`, Prebid sdk will add `includewinners` flag inside the targeting object described in [PBS Documentation](prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#targeting) . Default is `false`. | `true` |
+| includeBidderKeys | optional | boolean | ORTB | (iOS only) If `true`, Prebid sdk will add `includebidderkeys` flag inside the targeting object described in [PBS Documentation](/prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#targeting) . Default is `false`. | `true` |
+| isCoppaEnabled | optional | boolean | ORTB | (Android only) Set this to true if this app is aimed at children. It sets the ORTB COPPA flag. Default is false. | `true` |
+| useExternalBrowser | optional | boolean | ORTB | (Android only) TBD? Defaults to `false`. | `true` |
+| sendMraidSupportParams | optional | boolean | ORTB | (Android only) TBD If `true`, the SDK sends "af=3,5", indicating support for MRAID. Defaults to `true`. | `false` |
+
+### Global Methods
+
+#### setPrebidServerAccountId() (Android only)
+
+Your Prebid Server team will tell you whether this is required or not and if so, the value. See the initialization page for [Android](/prebid-mobile/pbm-api/android/code-integration-android.html).
+
+#### setPrebidServerHost()  (Android only)
+
+This is where the Prebid SDK will send the auction information.
+
+Signature:
+
+```kotlin
+func setPrebidServerHost(host: String)
+```
+
+Parameters: 
 
 {: .table .table-bordered .table-striped }
 | Parameter | Scope | Type | Description | Example |
 | --- | --- | --- | --- | --- |
-| prebidServerAccountId | either | string | Your Prebid Server team will tell you whether this is required or not and if so, the value. | "abc123" |
-| prebidServerHost | required | string | This is a URL or system-defined Prebid Server host. It's where the Prebid SDK will send the auction information. Your Prebid Server team will tell you which value to use. The system-defined values are: (TBD) | "https://prebidserver.example.com/openrtb2/auction" |
-| shareGeoLocation | optional | boolean | If this flag is true AND the app collects the user’s geographical location data, Prebid Mobile will send the user’s geographical location data (TBD - lat/long?) to the Prebid Server. The default setting is false. | `true` |
-| logLevel | optional | TBD | This property controls the level of logging output to the console. The value can be (TBD). | TBD |
-| timeoutMillis | optional | integer | (SDK v1.2+) The Prebid SDK timeout. When this number of milliseconds passes, the Prebid SDK returns control to the ad server SDK to fetch an ad without Prebid bids. | 1000 |
-| creativeFactoryTimeout | optional | integer | Controls how long a banner creative has to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
-| creativeFactoryTimeoutPreRenderContent | optional | integer | Controls how much time video and interstitial creatives have to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
-| storedAuctionResponse | optional | string | For testing and debugging. Get this value from your Prebid Server team. It signals Prebid Server to respond with a static response from the Prebid Server Database. Get this value from your Prebid Server team. See [more information on stored auction responses](/prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#stored-responses). | "abc123-sar-test-320x50" |
-| pbsDebug | optional | boolean | Adds the debug flag (`test`:1) on the outbound http call to the Prebid Server. The `test` flag signals to the Prebid Server to emit the full resolved request and the full Bid Request and Bid Response to and from each bidder. | true |
+| host | required | object | Host.APPNEXUS, Host.RUBICON, Host.createCustomHost(PREBID_SERVER_AUCTION_ENDPOINT) | Host.createCustomHost<wbr>("https://prebidserver<wbr>.example.com<wbr>/openrtb2/auction") |
 
-### Global Methods
+Examples:
+
+```kotlin
+PrebidMobile.setPrebidServerHost(Host.APPNEXUS)
+PrebidMobile.setPrebidServerHost(Host.RUBICON)
+PrebidMobile.setPrebidServerHost(Host.createCustomHost(https://prebidserver.example.com/openrtb2/auction))
+```
+
+#### setCustomStatusEndpoint() (Android only)
+
+Signature:
+
+```kotlin
+    public static void setCustomStatusEndpoint(String url) {
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| url | required | string | Use this URL to check the status of Prebid Server. The default status endpoint is the PBS URL appended with '/status'. | "https://prebidserver<wbr>.example<wbr>.com/custom<wbr>/status" |
+
+#### setTimeoutMillis() (Android only)
+
+The Prebid SDK timeout. When this number of milliseconds passes, the Prebid SDK returns control to the ad server SDK to fetch an ad without Prebid bids. See the initialization page for [Android](/prebid-mobile/pbm-api/android/code-integration-android.html).
+
+#### setShareGeoLocation() (Android only)
+
+If this flag is true AND the app collects the user’s geographical location data, Prebid Mobile will send the user’s lat/long geographical location data to the Prebid Server. The default is false.
+
+#### setCustomPrebidServerUrl() (iOS only)
+
+Defines which Prebid Server to connect to. See the initialization pages for [iOS](/prebid-mobile/pbm-api/ios/code-integration-ios.html) or [Android](/prebid-mobile/pbm-api/android/code-integration-android.html).
+
+#### setIncludeWinnersFlag() (Android only)
+
+If `true`, Prebid sdk will add the `includewinners` flag inside the targeting object described in [PBS Documentation](prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#targeting) . This is needed if you've set up line items in an ad server in "Send Top Bid" mode, as it's what creates the key value pairs like `hb_pb`. 
+
+Signature:
+
+```kotlin
+    public static void setIncludeWinnersFlag(boolean includeWinners)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| includeWinners | required | boolean | If `true`, Prebid sdk will add `includewinners` flag inside the targeting object described in [PBS Documentation](prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#targeting) . Default is `false`. | `true` |
+
+#### setIncludeBidderKeysFlag() (Android only)
+
+If `true`, Prebid sdk will add the `includebidderkeys` flag inside the targeting object described in [PBS Documentation](prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#targeting) . This is needed if you've set up line items in an ad server in "Send All Bids" mode, as it's what creates the key value pairs like `hb_pb_bidderA`. 
+
+Signature:
+
+```kotlin
+    public static boolean setIncludeBidderKeysFlag(boolean includeBidderKeys) {
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| includeBidderKeys | required | boolean | If `true`, Prebid sdk will add `includewinners` flag inside the targeting object described in [PBS Documentation](prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#targeting) . Default is `false`. | `true` |
+
+#### setStoredAuctionResponse() (Android only)
+
+For testing and debugging. Get this value from your Prebid Server team. It signals Prebid Server to respond with a static response from the Prebid Server Database. 
+See [more information on stored auction responses](/prebid-server/endpoints/openrtb2/pbs-endpoint-auction.html#stored-responses).
+
+Signature:
+
+```kotlin
+public static void setStoredAuctionResponse(@Nullable String storedAuctionResponse)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| storedAuctionResponse | required | string | Key as defined by Prebid Server. Get this value from your Prebid Server team. | "abc123-sar-test-320x50" |
 
 #### addStoredBidResponse()
 
@@ -55,9 +179,94 @@ func clearStoredBidResponses()
 
 Parameters: none.
 
-#### addCustomHeader()
+#### setLogLevel (Android only)
 
-This method enables you to customize the HTTP call to Prebid Server.
+Controls the level of logging output to the console.
+
+Signature:
+
+```kotlin
+    public static void setLogLevel(LogLevel logLevel)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| logLevel | required | enum | The value can be ERROR, DEBUG, WARN, and NONE. The default is `.NONE`. | `.DEBUG` |
+
+#### setPbsDebug() (Android only)
+
+Adds the debug flag (`test`:1) on the outbound http call to the Prebid Server. The `test` flag signals to the Prebid Server to emit the full resolved request and the full Bid Request and Bid Response to and from each bidder.
+
+Signature:
+
+```kotlin
+public static void setPbsDebug(boolean pbsDebug)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| pbsDebug | required | boolean | Turn on/off debug mode. Defaults to `false`. | `true` |
+
+#### assignNativeAssetID() (Android only)
+
+Whether to automatically assign an assetID for a Native ad. Default is `false`.
+
+Signature:
+
+```kotlin
+    public static void assignNativeAssetID(boolean assignNativeAssetID) {
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| assignNativeAssetID | required | boolean | Whether to automatically assign an assetID for a Native ad. Defaults to `false`. | `true` |
+
+#### setCreativeFactoryTimeout() (Android only)
+
+Controls how long a banner creative has to load before it is considered a failure.
+
+Signature:
+
+```kotlin
+    public static void setCreativeFactoryTimeout(int creativeFactoryTimeout)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| creativeFactoryTimeout | required | integer | Controls how long a banner creative has to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
+
+#### setCreativeFactoryTimeoutPreRenderContent() (Android only)
+
+Controls how much time video and interstitial creatives have to load before it is considered a failure.
+
+Signature:
+
+```kotlin
+    public static void setCreativeFactoryTimeoutPreRenderContent(int creativeFactoryTimeoutPreRenderContent)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| creativeFactoryTimeoutPreRenderContent | required | integer | Controls how much time video and interstitial creatives have to load before it is considered a failure. (TBD - is this milliseconds? Need the default value) | 2000 |
+
+#### addCustomHeader() (iOS only)
+
+This method enables you to customize the HTTP call to Prebid Server. See [setCustomHeaders()](TBD) for the Android version.
 
 Signature:
 
@@ -73,6 +282,23 @@ Parameters:
 | name | required | string | Name of the custom header | "X-mycustomheader" |
 | value | required | string | Value for the custom header | "customvalue" |
 
+#### setCustomHeaders() (Android only)
+
+This method enables you to customize the HTTP call to Prebid Server. See [addCustomHeaders()](TBD) for the iOS version
+
+Signature:
+
+```kotlin
+    public static void setCustomHeaders(@Nullable HashMap<String, String> customHeaders)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| customHeaders | required | hashmap | Hashmap of custom headers | "X-mycustomheader: customvalue" |
+
 #### clearCustomHeaders()
 
 Allows you to clear any custom headers you have previously set.
@@ -84,6 +310,23 @@ func clearCustomHeaders()
 ```
 
 Parameters: none
+
+#### setCustomLogger() (Android only)
+
+TBD
+
+Signature:
+
+```kotlin
+    public static void setCustomLogger(@NonNull PrebidLogger logger)
+```
+
+Parameters:
+
+{: .table .table-bordered .table-striped }
+| Parameter | Scope | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| logger | required | ? | TBD | TBD |
 
 ## Consent Management
 
@@ -278,6 +521,10 @@ externalUserIdArray.append(ExternalUserId(source: "liveramp.com", identifier: "A
 externalUserIdArray.append(ExternalUserId(source: "sharedid.org", identifier: "111111111111", atype: 1))
 
 Prebid.shared.externalUserIdArray = externalUserIdArray
+```
+
+```kotlin
+setExternalUserIds(List<ExternalUserId> externalUserIds)
 ```
 
 ### Storing IDs in Local Storage
